@@ -16,7 +16,7 @@ public class Regex {
             // dec, two int, both int present, separated by a dec point. non-zero start. optional -. split it up
             DECIMAL = Pattern.compile("-?0\\.[0-9]+|-?[1-9][0-9]*\\.[0-9]+"),
 
-            // double quotedstring, esc with "\", followed by one brnt'"\
+            // double quotedstring, esc with "\", followed by one brnt'"\.
             STRING = Pattern.compile("\"([^\\\\\"]|\\\\[bnrt'\"\\\\])*\"");
 
 }
