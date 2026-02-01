@@ -77,7 +77,21 @@ public class RegexTests {
                 Arguments.of("11 Characters", "automobiles", true),
                 Arguments.of("13 Characters", "i<3pancakes13", true),
                 Arguments.of("5 Characters", "5five", false),
-                Arguments.of("14 Characters", "i<3pancakes14!", false)
+                Arguments.of("14 Characters", "i<3pancakes14!", false),
+
+                // new 5 passing
+                Arguments.of("15 Char symbol", "!!!!!@@@@@#####", true),
+                Arguments.of("17 Chars w/spaces", "I don't like 12345", true),
+                Arguments.of("19 chars", "1111222233334444555", true),
+                Arguments.of("11 chars white space", "           ", true),
+                Arguments.of("15 chars spaced start", " 123456789012345678", true),
+
+                // new 5 failing
+                Arguments.of(),
+                Arguments.of(),
+                Arguments.of(),
+                Arguments.of(),
+                Arguments.of()
         );
     }
 
