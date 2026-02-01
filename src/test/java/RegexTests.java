@@ -81,7 +81,7 @@ public class RegexTests {
 
                 // new 5 passing
                 Arguments.of("15 Char symbol", "!!!!!@@@@@#####", true),
-                Arguments.of("17 Chars w/spaces", "I don't like 12345", true),
+                Arguments.of("17 Chars w/spaces", "I don't like 1234", true),
                 Arguments.of("19 chars", "1111222233334444555", true),
                 Arguments.of("11 chars white space", "           ", true),
                 Arguments.of("15 chars spaced start", " 123456789012345678", true),
@@ -106,7 +106,21 @@ public class RegexTests {
                 Arguments.of("Single Element", "[1]", true),
                 Arguments.of("Multiple Elements", "[1,20,3]", true),
                 Arguments.of("Missing Brackets", "1,2,3", false),
-                Arguments.of("Missing Commas", "[1 2 3]", false)
+                Arguments.of("Missing Commas", "[1 2 3]", false),
+
+                // new true test cases
+                Arguments.of("std spacing", "[1, 2, 3, 4, 5]", true),
+                Arguments.of("Different spacing","[1, 2,3,4, 5]", true),
+                Arguments.of("Empty list","[]", true),
+                Arguments.of("Positive","[123456789]", true),
+                Arguments.of("Two elemnts","[1,2]", true),
+
+                // new false test cases
+                Arguments.of("Negative Num","[-1]", false),
+                Arguments.of("Zero","[0]", false),
+                Arguments.of("Multiple spaces","[1,2,    5]", false),
+                Arguments.of("Trailing comma","[1, 2, 4,]", false),
+                Arguments.of("Leading Zero","[01, 02, 03]", false)
         );
     }
 
