@@ -87,11 +87,11 @@ public class RegexTests {
                 Arguments.of("15 chars spaced start", " 123456789012345678", true),
 
                 // new 5 failing
-                Arguments.of(),
-                Arguments.of(),
-                Arguments.of(),
-                Arguments.of(),
-                Arguments.of()
+                Arguments.of("Too long", "1145-908175-4198714-58914589", false),
+                Arguments.of("12 char even", "123456789012", false),
+                Arguments.of("Too short", "123456789", false),
+                Arguments.of("20 char even max", "12345678901234567890", false),
+                Arguments.of("10 char even", "1234567890", false)
         );
     }
 
