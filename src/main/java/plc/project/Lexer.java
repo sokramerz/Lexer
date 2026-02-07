@@ -1,13 +1,14 @@
 package plc.project;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The lexer works through three main functions:
  *
- *  - {@link #lex()}, which repeatedly calls lexToken() and skips whitespace
- *  - {@link #lexToken()}, which lexes the next token
- *  - {@link CharStream}, which manages the state of the lexer and literals
+ * - {@link #lex()}, which repeatedly calls lexToken() and skips whitespace
+ * - {@link #lexToken()}, which lexes the next token
+ * - {@link CharStream}, which manages the state of the lexer and literals
  *
  * If the lexer fails to parse something (such as an unterminated string) you
  * should throw a {@link ParseException} with an index at the invalid character.
@@ -28,7 +29,15 @@ public final class Lexer {
      * whitespace where appropriate.
      */
     public List<Token> lex() {
-        throw new UnsupportedOperationException(); //TODO
+        List<Token> tokenList = new ArrayList<>();
+        while (chars.has(0)) {
+            if (match("[ \\b\\n\\r\\t]")) {
+                chars.skip();
+            } else {
+                tokenList.add(lexToken());
+            }
+        }
+        return tokenList;
     }
 
     /**
@@ -40,31 +49,82 @@ public final class Lexer {
      * by {@link #lex()}
      */
     public Token lexToken() {
-        throw new UnsupportedOperationException(); //TODO
+        if (peek("[A-Za-z_]")) {
+            return lexIdentifier();
+        } else if (peek("[0-9]") || peek("-", "[0-9]")) {
+            return lexNumber();
+        } else if (peek("'")) {
+            return lexCharacter();
+        } else if (peek("\"")) {
+            return lexString();
+        } else {
+            return lexOperator();
+        }
     }
 
     public Token lexIdentifier() {
-        throw new UnsupportedOperationException(); //TODO
+        match("[A-Za-z_]");
+        while (match("[A-Za-z0-9_-]"));
+        return chars.emit(Token.Type.IDENTIFIER);
     }
 
     public Token lexNumber() {
-        throw new UnsupportedOperationException(); //TODO
+        if (peek("-")) {
+            match("-");
+        }
+        while (match("[0-9]"));
+        if (peek(".", "[0-9]")) {
+            match(".");
+            while (match("[0-9]"));
+            return chars.emit(Token.Type.DECIMAL);
+        }
+        return chars.emit(Token.Type.INTEGER);
     }
 
     public Token lexCharacter() {
-        throw new UnsupportedOperationException(); //TODO
+        match("'");
+        if (peek("\\")) {
+            lexEscape();
+        } else if (peek("[^'\\n\\r\\\\]")) {
+            match(".");
+        } else {
+            throw new ParseException("Invalid character literal", chars.index);
+        }
+        if (!match("'")) {
+            throw new ParseException("Unterminated character literal", chars.index);
+        }
+        return chars.emit(Token.Type.CHARACTER);
     }
 
     public Token lexString() {
-        throw new UnsupportedOperationException(); //TODO
+        match("\"");
+        while (!peek("\"")) {
+            if (peek("\\")) {
+                lexEscape();
+            } else if (peek("[^\"\\n\\r\\\\]")) {
+                match(".");
+            } else {
+                throw new ParseException("Unterminated string literal", chars.index);
+            }
+        }
+        match("\"");
+        return chars.emit(Token.Type.STRING);
     }
 
     public void lexEscape() {
-        throw new UnsupportedOperationException(); //TODO
+        match("\\");
+        if (!match("[bnrt'\"\\\\]")) {
+            throw new ParseException("Invalid escape sequence", chars.index);
+        }
     }
 
     public Token lexOperator() {
-        throw new UnsupportedOperationException(); //TODO
+        if (peek("!", "=") || peek("=", "=") || peek("<", "=") || peek(">", "=")) {
+            match(".", ".");
+        } else {
+            match(".");
+        }
+        return chars.emit(Token.Type.OPERATOR);
     }
 
     /**
@@ -73,14 +133,8 @@ public final class Lexer {
      * return true if the next characters are {@code 'a', 'b', 'c'}.
      */
     public boolean peek(String... patterns) {
-        // loop through everything
-        for (int i = 0; i < patterns.length; i++) {
-            // is there enough text check
-            if (!chars.has(i)) {
-                return false;
-            }
-            // does it match the pattern
-            if (!String.valueOf(chars.get(i)).matches(patterns[i])) {
+        for (int offset = 0; offset < patterns.length; offset++) {
+            if (!chars.has(offset) || !String.valueOf(chars.get(offset)).matches(patterns[offset])) {
                 return false;
             }
         }
@@ -93,7 +147,13 @@ public final class Lexer {
      * true. Hint - it's easiest to have this method simply call peek.
      */
     public boolean match(String... patterns) {
-        throw new UnsupportedOperationException(); //TODO (in Lecture)
+        boolean matches = peek(patterns);
+        if (matches) {
+            for (int i = 0; i < patterns.length; i++) {
+                chars.advance();
+            }
+        }
+        return matches;
     }
 
     /**
