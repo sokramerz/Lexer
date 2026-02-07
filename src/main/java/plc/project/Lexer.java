@@ -1,7 +1,7 @@
 package plc.project;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The lexer works through three main functions:
@@ -31,7 +31,7 @@ public final class Lexer {
     public List<Token> lex() {
         List<Token> tokens = new ArrayList<>();
         while (chars.has(0)) {
-            if (match("[ \\b\\n\\r\\t]")) {
+            if (match("[ \\n\\r\\t]")) {
                 chars.skip();
             } else {
                 tokens.add(lexToken());
@@ -72,20 +72,33 @@ public final class Lexer {
         if (peek("-")) {
             match("-");
         }
-        while (match("[0-9]"));
-        
-        if (peek(".", "[0-9]")) {
-            match(".");
-            while (match("[0-9]"));
-            return chars.emit(Token.Type.DECIMAL);
+
+        if (peek("0")) {
+            match("0");
+            if (peek(".", "[0-9]")) {
+                match(".");
+                while (match("[0-9]"));
+                return chars.emit(Token.Type.DECIMAL);
+            }
+            return chars.emit(Token.Type.INTEGER);
         }
-        
+
+        if (match("[1-9]")) {
+            while (match("[0-9]"));
+            if (peek(".", "[0-9]")) {
+                match(".");
+                while (match("[0-9]"));
+                return chars.emit(Token.Type.DECIMAL);
+            }
+            return chars.emit(Token.Type.INTEGER);
+        }
+
         return chars.emit(Token.Type.INTEGER);
     }
 
     public Token lexCharacter() {
         match("'");
-        if (peek("\\\\")) {
+        if (peek("\\\\")) { 
             lexEscape();
         } else if (peek("[^'\\n\\r\\\\]")) {
             match(".");
@@ -102,7 +115,7 @@ public final class Lexer {
     public Token lexString() {
         match("\"");
         while (!peek("\"")) {
-            if (peek("\\\\")) {
+            if (peek("\\\\")) { 
                 lexEscape();
             } else if (peek("[^\"\\n\\r\\\\]")) {
                 match(".");
@@ -115,7 +128,7 @@ public final class Lexer {
     }
 
     public void lexEscape() {
-        match("\\\\");
+        match("\\\\"); 
         if (!match("[bnrt'\"\\\\]")) {
             throw new ParseException("Invalid escape sequence", chars.index);
         }
@@ -152,7 +165,7 @@ public final class Lexer {
     public boolean match(String... patterns) {
         boolean matches = peek(patterns);
         if (matches) {
-            for (int offset = 0; offset < patterns.length; offset++) {
+            for (int i = 0; i < patterns.length; i++) {
                 chars.advance();
             }
         }
