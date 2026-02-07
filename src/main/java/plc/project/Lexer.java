@@ -1,7 +1,7 @@
 package plc.project;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The lexer works through three main functions:
@@ -29,15 +29,15 @@ public final class Lexer {
      * whitespace where appropriate.
      */
     public List<Token> lex() {
-        List<Token> tokenList = new ArrayList<>();
+        List<Token> tokens = new ArrayList<>();
         while (chars.has(0)) {
-            if (match("[ \\b\\n\\r\\t]")) {
+            if (match("[ \\n\\r\\t]")) {
                 chars.skip();
             } else {
-                tokenList.add(lexToken());
+                tokens.add(lexToken());
             }
         }
-        return tokenList;
+        return tokens;
     }
 
     /**
@@ -72,24 +72,40 @@ public final class Lexer {
         if (peek("-")) {
             match("-");
         }
-        while (match("[0-9]"));
-        if (peek(".", "[0-9]")) {
-            match(".");
-            while (match("[0-9]"));
-            return chars.emit(Token.Type.DECIMAL);
+
+        if (peek("0")) {
+            match("0");
+            if (peek(".", "[0-9]")) {
+                match(".");
+                while (match("[0-9]"));
+                return chars.emit(Token.Type.DECIMAL);
+            }
+            return chars.emit(Token.Type.INTEGER);
         }
+
+        if (match("[1-9]")) {
+            while (match("[0-9]"));
+            if (peek(".", "[0-9]")) {
+                match(".");
+                while (match("[0-9]"));
+                return chars.emit(Token.Type.DECIMAL);
+            }
+            return chars.emit(Token.Type.INTEGER);
+        }
+
         return chars.emit(Token.Type.INTEGER);
     }
 
     public Token lexCharacter() {
         match("'");
-        if (peek("\\")) {
+        if (peek("\\\\")) { // Fixed: Needs 4 backslashes to match literal '\'
             lexEscape();
         } else if (peek("[^'\\n\\r\\\\]")) {
             match(".");
         } else {
             throw new ParseException("Invalid character literal", chars.index);
         }
+
         if (!match("'")) {
             throw new ParseException("Unterminated character literal", chars.index);
         }
@@ -99,7 +115,7 @@ public final class Lexer {
     public Token lexString() {
         match("\"");
         while (!peek("\"")) {
-            if (peek("\\")) {
+            if (peek("\\\\")) { // Fixed: Needs 4 backslashes
                 lexEscape();
             } else if (peek("[^\"\\n\\r\\\\]")) {
                 match(".");
@@ -112,7 +128,7 @@ public final class Lexer {
     }
 
     public void lexEscape() {
-        match("\\");
+        match("\\\\"); // Fixed: Needs 4 backslashes
         if (!match("[bnrt'\"\\\\]")) {
             throw new ParseException("Invalid escape sequence", chars.index);
         }
